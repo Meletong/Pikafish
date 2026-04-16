@@ -1,0 +1,28 @@
+name: Build Pikafish Static
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build Pikafish (static linking)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ make musl-tools
+          cd /tmp
+          git clone --depth 1 https://github.com/official-pikafish/Pikafish.git
+          cd Pikafish/src
+          make -j$(nproc) build ARCH=x86-64 CXX="musl-g++ -static" CC="musl-gcc -static"
+          mkdir -p /tmp/output
+          cp pikafish /tmp/output/pikafish-static
+          file /tmp/output/pikafish-static
+          ldd /tmp/output/pikafish-static 2>&1 || true
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: pikafish-static
+          path: /tmp/output/pikafish-static
+          retention-days: 7
