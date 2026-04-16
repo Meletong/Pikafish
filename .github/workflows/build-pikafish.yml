@@ -11,10 +11,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc g++ make musl-tools
+          which musl-gcc
+          which musl-g++
+          musl-gcc --version
           cd /tmp
           git clone --depth 1 https://github.com/official-pikafish/Pikafish.git
           cd Pikafish/src
-          make -j$(nproc) build ARCH=x86-64 CXX="musl-g++ -static" CC="musl-gcc -static"
+          make -j$(nproc) build ARCH=x86-64 CXX=g++ CC=g++ CXXFLAGS="-static" LDFLAGS="-static"
           mkdir -p /tmp/output
           cp pikafish /tmp/output/pikafish-static
           file /tmp/output/pikafish-static
