@@ -1,0 +1,28 @@
+name: Build Pikafish for CentOS 7
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: centos:7
+
+    steps:
+      - name: Build Pikafish
+        run: |
+          yum install -y gcc gcc-c++ make git wget which
+          cd /tmp
+          git clone --depth 1 https://github.com/official-pikafish/Pikafish.git
+          cd Pikafish/src
+          make -j$(nproc) build ARCH=x86-64
+          ldd pikafish || true
+          mkdir -p /tmp/output
+          cp pikafish /tmp/output/pikafish-x86-64
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: pikafish-centos7
+          path: /tmp/output/pikafish-x86-64
+          retention-days: 7
