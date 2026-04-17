@@ -1,0 +1,37 @@
+name: Build Pikafish-HCE Static
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ make git
+
+      - name: Clone Pikafish-HCE
+        run: |
+          cd /tmp
+          git clone --depth 1 https://github.com/skystarspython/Pikafish-HCE.git
+
+      - name: Build fully static binary
+        run: |
+          cd /tmp/Pikafish-HCE/src
+          make -j$(nproc) build ARCH=x86-64 \
+            CXX=g++ \
+            CXXFLAGS="-O2 -DNDEBUG" \
+            LDFLAGS="-static -static-libstdc++ -static-libgcc"
+          file pikafish
+          ldd pikafish || echo "static binary - no dynamic deps"
+          mkdir -p /tmp/output
+          cp pikafish /tmp/output/pikafish-hce
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: pikafish-hce-static
+          path: /tmp/output/pikafish-hce
+          retention-days: 7
