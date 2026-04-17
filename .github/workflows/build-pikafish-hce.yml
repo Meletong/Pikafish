@@ -20,10 +20,12 @@ jobs:
       - name: Fix compilation (g++ type ambiguity)
         run: |
           cd /tmp/Pikafish-HCE/src
-          # bitboard.h: uint64_t(b) → static_cast<uint64_t>(b)
-          sed -i 's/if (uint64_t(b))/if (static_cast<uint64_t>(b))/g' bitboard.h
-          # bitboard.cpp: uint64_t(m.mask) → static_cast<uint64_t>(m.mask)
-          sed -i 's/popcount(uint64_t(m\.mask))/popcount(static_cast<uint64_t>(m.mask))/g' bitboard.cpp
+          # types.h: 给 operator bool() 和 operator unsigned() 加 explicit
+          # 消除 Bitboard → uint64_t 转换歧义
+          sed -i 's/constexpr operator bool() const/constexpr explicit operator bool() const/' types.h
+          sed -i 's/constexpr operator unsigned() const/constexpr explicit operator unsigned() const/' types.h
+          # 验证修改
+          grep -n 'explicit operator' types.h
 
       - name: Build fully static binary
         run: |
