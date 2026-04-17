@@ -22,7 +22,7 @@ jobs:
           cd /tmp/Pikafish-HCE/src
           make -j$(nproc) build ARCH=x86-64-modern \
             CXX=g++ \
-            CXXFLAGS="-O2 -DNDEBUG" \
+            CXXFLAGS="-O2 -DNDEBUG -fpermissive" \
             LDFLAGS="-static -static-libstdc++ -static-libgcc"
           file pikafish
           ldd pikafish || echo "static binary - no dynamic deps"
