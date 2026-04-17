@@ -20,7 +20,7 @@ jobs:
       - name: Build fully static binary
         run: |
           cd /tmp/Pikafish-HCE/src
-          make -j$(nproc) build ARCH=x86-64 \
+          make -j$(nproc) build ARCH=x86-64-modern \
             CXX=g++ \
             CXXFLAGS="-O2 -DNDEBUG" \
             LDFLAGS="-static -static-libstdc++ -static-libgcc"
