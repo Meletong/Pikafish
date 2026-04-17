@@ -17,6 +17,14 @@ jobs:
           cd /tmp
           git clone --depth 1 https://github.com/skystarspython/Pikafish-HCE.git
 
+      - name: Fix compilation (g++ type ambiguity)
+        run: |
+          cd /tmp/Pikafish-HCE/src
+          # bitboard.h: uint64_t(b) → static_cast<uint64_t>(b)
+          sed -i 's/if (uint64_t(b))/if (static_cast<uint64_t>(b))/g' bitboard.h
+          # bitboard.cpp: uint64_t(m.mask) → static_cast<uint64_t>(m.mask)
+          sed -i 's/popcount(uint64_t(m\.mask))/popcount(static_cast<uint64_t>(m.mask))/g' bitboard.cpp
+
       - name: Build fully static binary
         run: |
           cd /tmp/Pikafish-HCE/src
