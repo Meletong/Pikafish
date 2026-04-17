@@ -10,25 +10,28 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc g++ make git
+          sudo apt-get install -y gcc g++ make git musl-tools
 
-      - name: Clone and build Pikafish
+      - name: Clone Pikafish
         run: |
           cd /tmp
           git clone --depth 1 https://github.com/official-pikafish/Pikafish.git
-          cd Pikafish/src
+
+      - name: Build fully static binary
+        run: |
+          cd /tmp/Pikafish/src
           make -j$(nproc) build ARCH=x86-64 \
             CXX=g++ \
-            CXXFLAGS="-O3 -DNDEBUG" \
-            LDFLAGS="-static-libstdc++ -static-libgcc"
+            CXXFLAGS="-O2 -DNDEBUG" \
+            LDFLAGS="-static -static-libstdc++ -static-libgcc"
           file pikafish
-          ldd pikafish || true
+          ldd pikafish || echo "static binary - no dynamic deps"
           mkdir -p /tmp/output
-          cp pikafish /tmp/output/pikafish-linux
+          cp pikafish /tmp/output/pikafish-static-full
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
-          name: pikafish-linux
-          path: /tmp/output/pikafish-linux
+          name: pikafish-static-full
+          path: /tmp/output/pikafish-static-full
           retention-days: 7
