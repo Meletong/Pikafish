@@ -7,25 +7,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Build Pikafish (static linking)
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc g++ make musl-tools
-          which musl-gcc
-          which musl-g++
-          musl-gcc --version
+          sudo apt-get install -y gcc g++ make git
+
+      - name: Clone and build Pikafish
+        run: |
           cd /tmp
           git clone --depth 1 https://github.com/official-pikafish/Pikafish.git
           cd Pikafish/src
-          make -j$(nproc) build ARCH=x86-64 CXX=g++ CC=g++ CXXFLAGS="-static" LDFLAGS="-static"
+          make -j$(nproc) build ARCH=x86-64 \
+            CXX=g++ \
+            CXXFLAGS="-O3 -DNDEBUG" \
+            LDFLAGS="-static-libstdc++ -static-libgcc"
+          file pikafish
+          ldd pikafish || true
           mkdir -p /tmp/output
-          cp pikafish /tmp/output/pikafish-static
-          file /tmp/output/pikafish-static
-          ldd /tmp/output/pikafish-static 2>&1 || true
+          cp pikafish /tmp/output/pikafish-linux
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
-          name: pikafish-static
-          path: /tmp/output/pikafish-static
+          name: pikafish-linux
+          path: /tmp/output/pikafish-linux
           retention-days: 7
